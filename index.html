@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Balls - Color Matching Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: #2a2a2a;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto 20px;
+            border: 3px solid #444;
+            border-radius: 10px;
+            background: #1a1a1a;
+            cursor: crosshair;
+        }
+
+        .controls {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ddd;
+            font-size: 0.9em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #5dade2;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: none;
+        }
+
+        #hueSlider {
+            background: linear-gradient(to right, 
+                hsl(0, 100%, 50%), 
+                hsl(60, 100%, 50%), 
+                hsl(120, 100%, 50%), 
+                hsl(180, 100%, 50%), 
+                hsl(240, 100%, 50%), 
+                hsl(300, 100%, 50%), 
+                hsl(360, 100%, 50%)
+            );
+        }
+
+        #saturationSlider {
+            background: linear-gradient(to right, hsl(0, 0%, 50%), hsl(220, 100%, 50%));
+        }
+
+        #lightnessSlider {
+            background: linear-gradient(to right, hsl(220, 100%, 0%), hsl(220, 100%, 50%), hsl(220, 100%, 100%));
+        }
+
+        .value-display {
+            min-width: 45px;
+            text-align: right;
+            color: #aaa;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            padding: 15px;
+            background: #333;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .accuracy-good {
+            color: #2ecc71;
+        }
+
+        .accuracy-medium {
+            color: #f39c12;
+        }
+
+        .accuracy-poor {
+            color: #e74c3c;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        .difficulty-controls {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .difficulty-controls h3 {
+            margin-bottom: 10px;
+            font-size: 1em;
+            color: #ddd;
+        }
+
+        .checkbox-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Blue Balls</h1>
+        <p class="instructions">
+            Match the color of the RIGHT ball to the LEFT ball by adjusting the sliders below!
+        </p>
+
+        <canvas id="gameCanvas" width="1000" height="400"></canvas>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Accuracy</div>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Difference</div>
+                <div class="stat-value" id="colorDiff">∞</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Best Score</div>
+                <div class="stat-value" id="bestScore">0%</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="hueSlider">Hue</label>
+                <div class="slider-container">
+                    <input type="range" id="hueSlider" min="0" max="360" value="220">
+                    <span class="value-display" id="hueValue">220</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="saturationSlider">Saturation</label>
+                <div class="slider-container">
+                    <input type="range" id="saturationSlider" min="0" max="100" value="70">
+                    <span class="value-display" id="saturationValue">70</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="lightnessSlider">Lightness</label>
+                <div class="slider-container">
+                    <input type="range" id="lightnessSlider" min="0" max="100" value="50">
+                    <span class="value-display" id="lightnessValue">50</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="difficulty-controls">
+            <h3>Distractions (Increase Difficulty)</h3>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="movingBgCheck">
+                    <label for="movingBgCheck">Moving Background</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="colorNoiseCheck">
+                    <label for="colorNoiseCheck">Color Noise</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="flashingCheck">
+                    <label for="flashingCheck">Flashing Lights</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="particlesCheck">
+                    <label for="particlesCheck">Particles</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="rotatingCheck">
+                    <label for="rotatingCheck">Rotating Patterns</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-primary" id="newRoundBtn">New Round</button>
+            <button class="btn-secondary" id="resetBtn">Reset Sliders</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
